@@ -73,8 +73,9 @@ function initLayers(){
 }
 
 const manage = {
-    activateLayerById: function(name){
+    activateLayerByName: function(name){
         p.project.layers[name].activate();
+        return p.project.layers[name];
     }
 }
 
@@ -130,7 +131,7 @@ const draw = {
     },
     grid: function(d){
         // p.project.layers
-        manage.activateLayerById('grid')
+        manage.activateLayerByName('grid')
         var extension = 1000;
         for(var i = 0, i = Math.round(i-extension/d); i < (canvas.width+extension)/d; i++){
             this.vLine(i, d)
@@ -196,6 +197,7 @@ canvasTool.onMouseDrag = function (event) {
 let KEY_SPACE = false;
 let KEY_CONTROL = false;
 let KEY_V = false;
+let DRAWING_MODE = 'path';
 canvasTool.onKeyDown = function (event) {
     switch(event.key){
         case 'space':{
@@ -228,15 +230,20 @@ canvasTool.onKeyUp = function (event) {
 
 var testE;
 canvasTool.onMouseDown = function (event) {
+    console.log(event);
     if(event.event.which == 2 && KEY_CONTROL==true){
         zoom.extent();
+        return;
     }
     switch(KEY_SPACE){
         case true :{
             // canvas.style.cursor = 'grabbing';
             return;
         }case false:{
-            return;
+            if(DRAWING_MODE == 'path'){
+                path.point(event);
+                return;
+            }
         }
     }
 }
@@ -284,3 +291,25 @@ canvas.addEventListener('mousewheel', function(event){
 
 //     }, p.Path)
 // }
+
+
+const path = {
+    point: function(event){
+        manage.activateLayerByName('glyph');
+        var point = new p.Point({
+            x: event.point.x,
+            y: event.point.y
+        })
+        var pointCircle = new p.Path.Circle({
+            center: point,
+            radius: 7,
+            strokeColor: '#666666',
+            strokeWidth: 1,
+            fillColor: new p.Color(1)
+        })
+        var g = new p.Group([ pointCircle ]);
+    },
+    path: function(){
+        
+    }
+}
